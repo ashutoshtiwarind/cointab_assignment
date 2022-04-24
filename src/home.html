@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <label for="">enter the weigth of product</label>
+    <input id="weight" type="number" />
+    <br>
+    <label for="">enter pincode</label>
+    <input id="pincode" type="number">
+    <br>
+    <label for="">select options</label>
+    <select id="select" name="" id="">
+        <option value="forward">Forward</option>
+        <option value="RTO">Forward & RTO</option>
+    </select>
+    <br>
+    <button id="submit" >submit</button>
+
+    <div>
+        <p>your total cost is </p>
+        <p id="result"></p>
+    </div>
+</body>
+</html>
+
+<script>
+
+
+let submitBtn = document.getElementById("submit").addEventListener("click",getData);
+let zone = "";
+let totalCost = 0;
+function getData() {
+    
+    var weight = document.getElementById("weight").value;
+    var pincode = document.getElementById("pincode").value;
+    var type = document.getElementById("select").value || "forward";
+
+    async function pin() {
+    const response = await fetch("https://cointab11.herokuapp.com/pincode");
+    let data = await response.json();
+    let obj = data[0]
+    for (key in obj) {
+       if (key === pincode) {
+           zone = obj[key];
+       }
+   }
+   }
+   pin()
+   async function price() {
+       const response = await fetch("https://cointab11.herokuapp.com/priceData");
+       let data = await response.json();
+
+       let first = 0.0;
+       let additional = 0.0;
+       for(let i=0; i<data.length; i++) {
+           if(data[i].zone == zone) {
+               let arr = [];
+               if(type === "forward") {
+                   arr = data[i].Forward;
+               } else {
+                   arr = data[i].Forward_RTO;
+               }
+               first = arr[0].first_half_kg;
+               additional = arr[0].additional_half_kg;
+               break;
+           }
+       }
+       weight = Math.ceil(weight);
+       console.log("f",first,additional)
+       
+       totalCost += first;
+       weight -= 0.5;
+       totalCost += (weight*2)*additional;
+       setTimeout(() => {
+        let result = document.getElementById("result")
+       result.textContent = totalCost;
+       },0);
+       
+    }
+   price();
+}
+</script>
